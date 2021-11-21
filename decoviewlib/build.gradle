@@ -1,6 +1,32 @@
 plugins {
     id 'com.android.library'
+
 }
+
+ext {
+    bintrayRepo = 'maven'
+    bintrayName = 'DecoViewLib'
+
+    publishedGroupId = 'com.pharid.decoview.lib'
+    libraryName = 'DecoViewLib'
+    artifact = 'DecoViewLib'
+
+    libraryDescription = 'Easy to implement Animated DecoView for Android'
+
+    siteUrl = 'https://github.com/pharidali/DecoViewLib'
+    gitUrl = 'https://github.com/pharidali/DecoViewLib.git'
+
+    libraryVersion = '1.0.0'
+
+    developerId = 'pharidali'
+    developerName = 'Pharid Ali'
+    developerEmail = 'asoftplus@gmail.com'
+
+    licenseName = 'The MIT License (MIT)'
+    licenseUrl = 'http://opensource.org/licenses/mit-license.php'
+    allLicenses = ["MIT"]
+}
+
 
 
 
@@ -27,8 +53,71 @@ android {
     }
 }
 
+repositories {
+    maven {
+        url "https://jitpack.io"
+    }
+
+    mavenCentral()
+}
+
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.0.0'
     implementation 'com.nineoldandroids:library:2.4.0'
+
+
+    apply plugin: 'com.jfrog.bintray'
+
+    version = libraryVersion
+
+    task sourcesJar(type: Jar) {
+        from android.sourceSets.main.java.srcDirs
+        classifier = 'sources'
+    }
+
+    task javadoc(type: Javadoc) {
+        source = android.sourceSets.main.java.srcDirs
+        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+    artifacts {
+        archives javadocJar
+        archives sourcesJar
+    }
+
+// Bintray
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+    bintray {
+        user = properties.getProperty("bintray.user")
+        key = properties.getProperty("bintray.apikey")
+
+        configurations = ['archives']
+        pkg {
+            repo = bintrayRepo
+            name = bintrayName
+            desc = libraryDescription
+            websiteUrl = siteUrl
+            vcsUrl = gitUrl
+            licenses = allLicenses
+            publish = true
+            publicDownloadNumbers = true
+            version {
+                desc = libraryDescription
+                gpg {
+                    sign = true //Determines whether to GPG sign the files. The default is false
+                    passphrase = properties.getProperty("bintray.gpg.password")
+                    //Optional. The passphrase for GPG signing'
+                }
+            }
+        }
+    }
+
 }
